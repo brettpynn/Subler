@@ -294,9 +294,14 @@ final class QueueController : NSWindowController, NSWindowDelegate, NSPopoverDel
         if prefs.prettifyAudioTrackName {
             item.addAction(QueuePrettifyAudioTrackNameAction())
         }
+        if prefs.addChapters {
+            let policy = MP42File.ChaptersInsertPolicy(rawValue: prefs.addChaptersPolicy) ?? .replace
+            item.addAction(QueueAddChaptersAction(minutes: prefs.addChaptersInterval, policy: policy))
+        }
         if prefs.renameChapters {
             item.addAction(QueueRenameChaptersAction())
         }
+        item.setChaptersPreviewGeneration(prefs.chaptersPreview)
         if prefs.fixTrackLanguage {
             item.addAction(QueueSetLanguageAction(language: prefs.fixTrackLanguageValue))
         }
@@ -573,6 +578,7 @@ final class QueueController : NSWindowController, NSWindowDelegate, NSPopoverDel
             else { return }
 
         if popover == closedPopover {
+            prefs.saveUserDefaults()
             popover = nil
         }
         if itemPopover == closedPopover {
@@ -581,6 +587,7 @@ final class QueueController : NSWindowController, NSWindowDelegate, NSPopoverDel
     }
 
     func windowWillClose(_ notification: Notification) {
+        prefs.saveUserDefaults()
         windowController = nil
     }
 
