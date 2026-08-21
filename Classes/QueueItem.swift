@@ -146,6 +146,18 @@ import MP42Foundation
         }
     }
 
+    private func updateChaptersPreviewGeneration(for mp4: MP42File) {
+        let hasChapters = (mp4.chapters?.chapterCount() ?? 0) > 0
+        let previewRequested = queue.sync { attributes[MP42GenerateChaptersPreviewTrack] != nil }
+        let createdChapters = actions.contains { $0 is QueueAddChaptersAction }
+
+        if hasChapters && (previewRequested || createdChapters) {
+            setChaptersPreviewGeneration(true)
+        } else {
+            setChaptersPreviewGeneration(false)
+        }
+    }
+
     // MARK: Item processing
 
     enum ProcessError: Error {
@@ -312,6 +324,11 @@ import MP42Foundation
         }
 
         guard let mp4 = mp4File else { return }
+
+        // Chapter previews run at the end of write/update. Create-chapters is a pre-action,
+        // so after prepare() we only keep preview generation when markers actually exist.
+        // Missing chapters must not fail the queue item.
+        updateChaptersPreviewGeneration(for: mp4)
 
         #if SB_SANDBOX
         let mp4Token = MP42SecurityAccessToken(object: mp4)

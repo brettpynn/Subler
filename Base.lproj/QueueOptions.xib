@@ -1826,7 +1826,7 @@
                     </connections>
                 </popUpButton>
                 <button
-					toolTip="Create chapter preview images using the position from General Settings"
+					toolTip="Create chapter preview images after chapters exist (also enabled automatically when Add chapters is on). Uses the position from General Settings."
 					verticalHuggingPriority="751"
 					translatesAutoresizingMaskIntoConstraints="NO"
 					id="chPrv-btn">
