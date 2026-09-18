@@ -337,7 +337,8 @@ sub new {
 
 	# Cosmetics
 	for my $key (qw(dvd season episode endep part)) {
-		$self->{$key} =~ s/^0+// if defined $self->{$key};
+		# Strip leading zeroes while preserving a real numeric zero (for example, S00 specials).
+		$self->{$key} =~ s/^0+(?=\d)// if defined $self->{$key};
 	}
 	$self->{endep} = undef if $self->{endep} == $self->{episode};
 

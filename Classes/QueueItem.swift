@@ -41,6 +41,11 @@ import MP42Foundation
     var mp4File: MP42File?
     var localizedWorkingDescription: String?
 
+    // Capture search terms before pre-actions mutate metadata (for example,
+    // QueueClearExistingMetadataAction). This keeps queued metadata lookup using
+    // the same high-quality terms the manual metadata search sees.
+    var preparedMetadataSearchTerms: MetadataSearchTerms?
+
     weak var delegate: Queue?
 
     private var statusInternal: Status
@@ -298,10 +303,27 @@ import MP42Foundation
             }
         }
 
+        runPreActions()
+    }
+
+    /// Runs every pre-write queue action in order. Pre-actions are intentionally
+    /// best-effort and independent: returning false from one action (including a
+    /// metadata lookup with no result) never prevents later actions from running.
+    private func runPreActions() {
+        // Snapshot metadata search terms before any pre-action can remove or
+        // rewrite the metadata they are derived from. In particular, "Clear
+        // existing metadata" is intentionally ordered before "Fetch Metadata",
+        // so deriving the terms inside QueueMetadataAction after the clear can
+        // degrade a precise TV lookup into filename parsing.
+        preparedMetadataSearchTerms = mp4File?.extractSearchTerms(fallbackURL: fileURL)
+
         for action in actions.filter({ $0.type == .pre }) {
             localizedWorkingDescription = action.localizedDescription
             delegate?.updateProgress(0)
-            _ = action.runAction(self)
+            let succeeded = action.runAction(self)
+            if succeeded == false {
+                Logger.shared.write(toLog: "Queue action '\(action.localizedDescription)' did not make a change for \(fileURL.lastPathComponent); continuing")
+            }
         }
     }
 
@@ -316,11 +338,18 @@ import MP42Foundation
         defer {
             mp4File?.progressHandler = nil
             mp4File = nil
+            preparedMetadataSearchTerms = nil
         }
 
-        // The file has been added directly to the queue
+        // URL-backed queue items need to be imported before pre-actions can run.
+        // Items created from an already-open MP42File already have mp4File set;
+        // historically that path skipped prepare() and therefore skipped *all*
+        // pre-actions, while post-actions such as Optimize still ran. Always run
+        // the pre-action pipeline for that path too.
         if mp4File == nil {
             try prepare()
+        } else {
+            runPreActions()
         }
 
         guard let mp4 = mp4File else { return }

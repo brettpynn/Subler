@@ -288,7 +288,10 @@ class QueueMetadataAction : NSObject, QueueActionProtocol {
 
     func runAction(_ item: QueueItem) -> Bool {
         if let file = item.mp4File {
-            let searchTerms = file.extractSearchTerms(fallbackURL: item.fileURL)
+            // Prefer the terms captured by QueueItem.prepare() before any
+            // metadata-clearing action ran. Fall back to the current file state
+            // for QueueItems constructed in ways that bypass prepare().
+            let searchTerms = item.preparedMetadataSearchTerms ?? file.extractSearchTerms(fallbackURL: item.fileURL)
             if let metadata = searchMetadata(terms: searchTerms) {
 
                 for item in metadata.metadataItemsFiltered(byIdentifier: MP42MetadataKeyHDVideo) {
