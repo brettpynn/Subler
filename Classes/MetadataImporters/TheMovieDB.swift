@@ -90,7 +90,13 @@ public struct TheMovieDB: MetadataService {
         var results: Set<String> = Set()
 
         let series = session.search(series: tvShow, language: language)
-        results.formUnion(series.compactMap { $0.name } )
+        results.formUnion(series.compactMap { result in
+            guard let name = result.name else { return nil }
+            if let year = result.first_air_date?.prefix(4), Int(year) != nil {
+                return "\(name) (\(year))"
+            }
+            return name
+        })
 
         if language != defaultLanguage {
             let englishResults = search(tvShow: tvShow, language: defaultLanguage)
@@ -212,8 +218,9 @@ public struct TheMovieDB: MetadataService {
     }
 
     private func searchIDs(seriesName: String, language: String) -> [Int] {
-        let series = session.search(series: seriesName, language: language)
-        let filteredSeries = series.filter { match(series: $0, name: seriesName) }.map { $0.id }
+        let searchName = seriesName.removingTrailingYear
+        let series = session.search(series: searchName, language: language)
+        let filteredSeries = series.filter { match(series: $0, name: searchName) }.map { $0.id }
 
         if filteredSeries.isEmpty == false {
             return filteredSeries

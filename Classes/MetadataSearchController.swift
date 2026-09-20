@@ -492,7 +492,15 @@ final class MetadataSearchController: NSViewController, NSTableViewDataSource, N
                     }
                 case .movie:
                     if let title = result[.name] as? String {
-                        cell?.textField?.stringValue = title
+                        if let releaseDate = result[.releaseDate] as? String,
+                           let year = releaseDate.split(separator: "-").first, year.count == 4 {
+                            cell?.textField?.stringValue = "\(title) (\(year))"
+                        } else if let releaseDate = result[.releaseDate] as? Date {
+                            let year = Calendar(identifier: .gregorian).component(.year, from: releaseDate)
+                            cell?.textField?.stringValue = "\(title) (\(year))"
+                        } else {
+                            cell?.textField?.stringValue = title
+                        }
                     }
                 }
                 return cell

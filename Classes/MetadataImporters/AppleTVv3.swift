@@ -647,7 +647,18 @@ public struct AppleTVv3: MetadataService {
     public var name: String { return AppleTVv3.AppleTVAPI }
 
     public func search(tvShow: String, language: String) -> [String] {
-        return []
+        if let storefront = Storefront.getStorefront(from: language) {
+            urlConfiguration(storefront: storefront.0, language: storefront.1)
+        }
+
+        return search(term: tvShow.removingTrailingYear, filter: .tvshows).compactMap { item in
+            guard let title = item.title else { return nil }
+            if let date = item.releaseDate {
+                let year = Calendar(identifier: .gregorian).component(.year, from: Date(timeIntervalSince1970: date / 1000))
+                return "\(title) (\(year))"
+            }
+            return title
+        }
     }
 
     public func search(tvShow: String, language: String, season: Int?, episode: Int?) -> [MetadataResult] {
@@ -656,8 +667,9 @@ public struct AppleTVv3: MetadataService {
             urlConfiguration(storefront: storefront.0, language: storefront.1)
         }
 
-        let results = search(term: tvShow, filter: .tvshows)
-        let show = results.first(where: { $0.title?.caseInsensitiveCompare(tvShow) == .orderedSame }) ?? results.first
+        let searchName = tvShow.removingTrailingYear
+        let results = search(term: searchName, filter: .tvshows)
+        let show = results.first(where: { $0.title?.caseInsensitiveCompare(searchName) == .orderedSame }) ?? results.first
 
         guard let show = show else { return [] }
 

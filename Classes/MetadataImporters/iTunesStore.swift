@@ -46,6 +46,7 @@ private struct Artist : Codable {
     let artistType: String?
     let primaryGenreId: Int?
     let primaryGenreName: String?
+    let releaseDate: String?
 }
 
 extension Artist {
@@ -58,6 +59,7 @@ extension Artist {
         artistType = try container.decodeIfPresent(String.self, forKey: .artistType)
         primaryGenreId = try container.decodeIntOrStringIfPresent(forKey: .primaryGenreId)
         primaryGenreName = try container.decodeIfPresent(String.self, forKey: .primaryGenreName)
+        releaseDate = try container.decodeIfPresent(String.self, forKey: .releaseDate)
     }
 }
 
@@ -268,7 +270,8 @@ public struct iTunesStore: MetadataService {
     // MARK: - TV Series name search
 
     public func search(tvShow: String, language: String) -> [String] {
-        let searchTerm = tvShow.urlEncoded()
+        let searchName = tvShow.removingTrailingYear
+        let searchTerm = searchName.urlEncoded()
 
         if searchTerm.isEmpty == false,
             let store = Store(language: language),
@@ -277,10 +280,23 @@ public struct iTunesStore: MetadataService {
 
             let filteredResults = results.filter { $0.artistName.isEmpty == false }
             let sortedResults = filteredResults.sorted(by: { (a1, a2) -> Bool in
-                return a1.artistName.minimumEditDistance(other: tvShow) > a2.artistName.minimumEditDistance(other: tvShow) ? false : true
+                return a1.artistName.minimumEditDistance(other: searchName) > a2.artistName.minimumEditDistance(other: searchName) ? false : true
             })
 
-            return sortedResults.compactMap { $0.artistName }
+            var earliestYear: [String: Int] = [:]
+            for result in sortedResults {
+                if let yearText = result.releaseDate?.prefix(4), let year = Int(yearText) {
+                    earliestYear[result.artistName] = min(earliestYear[result.artistName] ?? year, year)
+                }
+            }
+            var seen = Set<String>()
+            return sortedResults.compactMap { result in
+                guard seen.insert(result.artistName).inserted else { return nil }
+                if let year = earliestYear[result.artistName] {
+                    return "\(result.artistName) (\(year))"
+                }
+                return result.artistName
+            }
         } else {
             return [];
         }
@@ -439,14 +455,15 @@ public struct iTunesStore: MetadataService {
 
     public func search(tvShow: String, language: String, season: Int?, episode: Int?) -> [MetadataResult] {
         guard tvShow.isEmpty == false, let store = Store(language: language) else { return [] }
+        let searchName = tvShow.removingTrailingYear
 
         // Determine artistId/collectionId
         let ids = { () -> [Int] in
-            let idsWithSeason = self.findiTunesIDs(seriesName: tvShow, seasonNum: season, store: store, relaxSearch: false)
+            let idsWithSeason = self.findiTunesIDs(seriesName: searchName, seasonNum: season, store: store, relaxSearch: false)
             if idsWithSeason.isEmpty == false { return idsWithSeason }
-            let idsWithSeasonRelaxed = self.findiTunesIDs(seriesName: tvShow, seasonNum: season, store: store, relaxSearch: true)
+            let idsWithSeasonRelaxed = self.findiTunesIDs(seriesName: searchName, seasonNum: season, store: store, relaxSearch: true)
             if idsWithSeasonRelaxed.isEmpty == false { return idsWithSeasonRelaxed }
-            return self.findiTunesIDs(seriesName: tvShow, seasonNum: nil, store: store, relaxSearch: true)
+            return self.findiTunesIDs(seriesName: searchName, seasonNum: nil, store: store, relaxSearch: true)
         }()
 
         // If we have an ID, use the lookup API to get episodes for that show/season

@@ -173,15 +173,23 @@ public struct AppleTV: MetadataService {
 
     public func search(tvShow: String, language: String) -> [String] {
         guard let store = iTunesStore.Store(language: language) else { return [] }
-        return search(term: tvShow, store: store, type: .tvShow(season: nil)).compactMap { $0.title }
+        return search(term: tvShow.removingTrailingYear, store: store, type: .tvShow(season: nil)).compactMap { item in
+            guard let title = item.title else { return nil }
+            if let date = item.releaseDate {
+                let year = Calendar(identifier: .gregorian).component(.year, from: Date(timeIntervalSince1970: date / 1000))
+                return "\(title) (\(year))"
+            }
+            return title
+        }
     }
 
     public func search(tvShow: String, language: String, season: Int?, episode: Int?) -> [MetadataResult] {
         guard let store = iTunesStore.Store(language: language) else { return [] }
 
-        let tvShows = search(term: tvShow, store: store, type: .tvShow(season: nil))
+        let searchName = tvShow.removingTrailingYear
+        let tvShows = search(term: searchName, store: store, type: .tvShow(season: nil))
 
-        if let tvShow = tvShows.match(title: tvShow) {
+        if let tvShow = tvShows.match(title: searchName) {
             let seasons = fetchSeasons(id: tvShow.id, store: store)
             let seasonIndex = seasons.firstIndex(where: {$0.seasonNumber == season}) ?? -1
             if seasons.count >= seasonIndex, seasonIndex > -1 {

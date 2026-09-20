@@ -109,3 +109,14 @@ extension String {
         return trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
 }
+
+extension String {
+    /// Removes a display-only trailing year, e.g. "Doctor Who (2005)" -> "Doctor Who".
+    var removingTrailingYear: String {
+        guard hasSuffix(")"), count >= 7 else { return self }
+        let suffix = String(suffix(7))
+        guard suffix.first == " ", suffix.dropFirst().first == "(",
+              let year = Int(suffix.dropFirst(2).dropLast()), year >= 1000 else { return self }
+        return String(dropLast(7))
+    }
+}
