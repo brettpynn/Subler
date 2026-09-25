@@ -116,6 +116,10 @@ class MovieViewController: PropertyView, NSTableViewDataSource, ExpandedTableVie
             }
         }
 
+        if #available(macOS 26, *) {
+            setsPopUp.menu?.items.first?.image = NSImage.init(systemSymbolName: "ellipsis", accessibilityDescription: nil)
+        }
+
         columnWidth = column.width
 
         metadataTableView.defaultEditingColumn = 1
@@ -901,9 +905,18 @@ class MovieViewController: PropertyView, NSTableViewDataSource, ExpandedTableVie
     private func add(artworks: [Any], toIndexPath: IndexPath) -> Bool {
         let items = artworks.compactMap { (artwork: Any) -> MP42Image? in
             if let url = artwork as? URL {
-                let value = try? url.resourceValues(forKeys: [URLResourceKey.typeIdentifierKey])
+                var isJpeg = false
+                if #available(macOS 11, *) {
+                    let value = try? url.resourceValues(forKeys: [URLResourceKey.contentTypeKey])
+                    isJpeg = value?.contentType?.conforms(to: .jpeg) ?? false
+                } else {
+                    let value = try? url.resourceValues(forKeys: [URLResourceKey.typeIdentifierKey])
+                    if let type = value?.typeIdentifier, UTTypeConformsTo(type as CFString, "public.jpeg" as CFString) {
+                        isJpeg = true
+                    }
+                }
 
-                if let type = value?.typeIdentifier, UTTypeConformsTo(type as CFString, "public.jpeg" as CFString), let data = try? Data(contentsOf: url) {
+                if isJpeg, let data = try? Data(contentsOf: url) {
                     return MP42Image(data: data, type: MP42_ART_JPEG)
                 } else if let image = NSImage(contentsOf: url) {
                     return MP42Image(image: image)
@@ -932,7 +945,11 @@ class MovieViewController: PropertyView, NSTableViewDataSource, ExpandedTableVie
         panel.allowsMultipleSelection = true
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
-        panel.allowedFileTypes = ["public.image"]
+        if #available(macOS 11, *) {
+            panel.allowedContentTypes = [.image]
+        } else {
+            panel.allowedFileTypes = ["public.image"]
+        }
 
         guard let window = view.window else { return }
 
@@ -994,14 +1011,11 @@ class MovieViewController: PropertyView, NSTableViewDataSource, ExpandedTableVie
     func filePromiseProvider(_ filePromiseProvider: NSFilePromiseProvider, writePromiseTo url: URL, completionHandler: @escaping (Error?) -> Void) {
         if let userInfo = filePromiseProvider.userInfo as? [String: AnyObject] {
             do {
-                if let indexPathData = userInfo[FilePromiseProvider.UserInfoKeys.indexPathKey] as? Data {
-                    if let indexPath = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(indexPathData) as? IndexPath {
-                        let item = artworks[indexPath.last!]
-                        if let image = item.imageValue {
-                            try image.data?.write(to: url)
-                            completionHandler(nil)
-                        }
-                    }
+                if let indexPathData = userInfo[FilePromiseProvider.UserInfoKeys.indexPathKey] as? Data,
+                   let indexPath = try NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSIndexPath.classForCoder()], from: indexPathData) as? IndexPath,
+                   let image = artworks[indexPath.last!].imageValue {
+                    try image.data?.write(to: url)
+                    completionHandler(nil)
                 }
             } catch {
                 fatalError("failed to unarchive indexPath from promise provider.")
@@ -1114,7 +1128,7 @@ class MovieViewController: PropertyView, NSTableViewDataSource, ExpandedTableVie
                 if let pasteboardItem = draggingItem.item as? NSPasteboardItem {
                     do {
                         if let indexPathData = pasteboardItem.data(forType: .artworkDragType),
-                           let itemIndexPath = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(indexPathData) as? IndexPath {
+                           let itemIndexPath = try NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSIndexPath.classForCoder()], from:indexPathData) as? IndexPath {
                             indexes.insert(itemIndexPath)
                         }
                     } catch {
@@ -1246,7 +1260,7 @@ class MovieViewController: PropertyView, NSTableViewDataSource, ExpandedTableVie
             for pasteboardItem in items {
                 do {
                     if let indexPathData = pasteboardItem.data(forType: .artworkDragType),
-                       let itemIndexPath = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(indexPathData) as? IndexPath {
+                       let itemIndexPath = try NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSIndexPath.classForCoder()], from:indexPathData) as? IndexPath {
                         indexes.insert(itemIndexPath)
                     }
                 } catch {

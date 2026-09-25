@@ -7,8 +7,9 @@
 
 import Cocoa
 import MP42Foundation
+import UniformTypeIdentifiers
 
-final class DocumentWindowController: NSWindowController, TracksViewControllerDelegate, MetadataSearchViewControllerDelegate, FileImportControllerDelegate, ProgressViewControllerDelegate, NSDraggingDestination, NSUserInterfaceValidations {
+final class DocumentWindowController: NSWindowController, TracksViewControllerDelegate, MetadataSearchViewControllerDelegate, ChapterSearchControllerDelegate, FileImportControllerDelegate, ProgressViewControllerDelegate, NSDraggingDestination, NSUserInterfaceValidations {
 
     private var doc: Document {
         return document as! Document
@@ -50,9 +51,9 @@ final class DocumentWindowController: NSWindowController, TracksViewControllerDe
         toolbar.allowsUserCustomization = true
         toolbar.autosavesConfiguration = true
         if #available(macOS 26, *) {
-            toolbar.displayMode = .iconAndLabel
-        } else {
             toolbar.displayMode = .iconOnly
+        } else {
+            toolbar.displayMode = .iconAndLabel
         }
         self.window?.toolbar = toolbar
 
@@ -67,8 +68,8 @@ final class DocumentWindowController: NSWindowController, TracksViewControllerDe
             splitViewController.splitView.identifier = DocumentWindowController.splitViewResorationIdentifier
         }
         else {
-            window.setContentSize(NSSize(width: 690, height: 510))
-            splitViewController.splitView.setPosition(160, ofDividerAt: 0)
+            window.setContentSize(NSSize(width: 692, height: 600))
+            splitViewController.splitView.setPosition(240, ofDividerAt: 0)
         }
 
         didSelect(tracks: [])
@@ -227,6 +228,7 @@ final class DocumentWindowController: NSWindowController, TracksViewControllerDe
         case #selector(selectFile(_:)),
              #selector(selectMetadataFile(_:)),
              #selector(searchMetadata(_:)),
+             #selector(searchChapters(_:)),
              #selector(addChaptersEvery(_:)),
              #selector(iTunesFriendlyTrackGroups(_:)),
              #selector(clearTrackNames(_:)),
@@ -403,9 +405,10 @@ final class DocumentWindowController: NSWindowController, TracksViewControllerDe
     func didSelect(metadata: MetadataResult) {
         let map = metadata.mediaKind == .movie ? MetadataPrefs.movieResultMap : MetadataPrefs.tvShowResultMap
         let keepEmptyKeys = MetadataPrefs.keepEmptyAnnotations
+        let overwriteExisting = MetadataPrefs.overwriteExistingAnnotations
 
         let result = metadata.mappedMetadata(to: map, keepEmptyKeys: keepEmptyKeys)
-        mp4.metadata.merge(result)
+        mp4.metadata.merge(result, overwrite: overwriteExisting)
 
         if let hdType = mp4.hdType {
             for item in mp4.metadata.metadataItemsFiltered(byIdentifier: MP42MetadataKeyHDVideo) {
@@ -417,6 +420,27 @@ final class DocumentWindowController: NSWindowController, TracksViewControllerDe
         doc.updateChangeCount(.changeDone)
         metadataViewController?.metadata = mp4.metadata
     }
+
+    @IBAction func searchChapters(_ sender: Any?) {
+          let name = mp4.metadata.metadataItemsFiltered(byIdentifier: MP42MetadataKeyName).first?.stringValue
+          let url = mp4.firstSourceURL ?? doc.fileURL
+          let title = (name?.isEmpty == false ? name : url?.lastPathComponent) ?? ""
+          let duration = UInt64(mp4.duration)
+
+          let controller = ChapterSearchController(delegate: self, title: title, duration: duration)
+          contentViewController?.presentAsSheet(controller)
+    }
+
+    func didSelect(chapters: [MP42TextSample]) {
+           let chapterTrack = MP42ChapterTrack()
+           for chapter in chapters {
+               chapterTrack.addChapter(chapter)
+           }
+
+           mp4.addTrack(chapterTrack)
+           doc.updateChangeCount(.changeDone)
+           tracksViewController.reloadData()
+       }
 
     // MARK: File import
 
@@ -447,11 +471,11 @@ final class DocumentWindowController: NSWindowController, TracksViewControllerDe
     private func addMetadata(fileURL: URL) {
         let ext = fileURL.pathExtension.lowercased()
         if ext == "xml" || ext == "nfo", let metadata = MP42Metadata(url: fileURL) {
-            mp4.metadata.merge(metadata)
+            mp4.metadata.merge(metadata, overwrite: true)
             doc.updateChangeCount(.changeDone)
             metadataViewController?.metadata = mp4.metadata
         } else if let file = try? MP42File(url: fileURL) {
-            mp4.metadata.merge(file.metadata)
+            mp4.metadata.merge(file.metadata, overwrite: true)
             doc.updateChangeCount(.changeDone)
             metadataViewController?.metadata = mp4.metadata
         }
@@ -463,7 +487,13 @@ final class DocumentWindowController: NSWindowController, TracksViewControllerDe
         panel.allowsMultipleSelection = false
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
-        panel.allowedFileTypes = ["mp4", "m4v", "m4a", "xml", "nfo"]
+        if #available(macOS 12, *) {
+            panel.allowedContentTypes = [.mpeg4Movie, .mpeg4Audio,
+                                         .appleProtectedMPEG4Video,
+                                         .xml, UTType(filenameExtension: "nfo")!]
+        } else {
+            panel.allowedFileTypes = ["mp4", "m4v", "m4a", "xml", "nfo"]
+        }
 
         panel.beginSheetModal(for: windowForSheet) { (response) in
             if response == NSApplication.ModalResponse.OK, let url = panel.url {
@@ -474,13 +504,17 @@ final class DocumentWindowController: NSWindowController, TracksViewControllerDe
 
     @IBAction func selectFile(_ sender: Any) {
         guard let windowForSheet = doc.windowForSheet else { return }
-        let supportedFileFormats = MP42FileImporter.supportedFileFormats() + ["txt", "csv"]
 
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
-        panel.allowedFileTypes = supportedFileFormats
+
+        if #available(macOS 11, *) {
+            panel.allowedContentTypes = MP42FileImporter.supportedContentTypes() + [.text, .commaSeparatedText]
+        } else {
+            panel.allowedFileTypes = MP42FileImporter.supportedFileFormats() + ["txt", "csv"]
+        }
 
         panel.beginSheetModal(for: windowForSheet) { (response) in
             if response == NSApplication.ModalResponse.OK {
@@ -552,7 +586,7 @@ final class DocumentWindowController: NSWindowController, TracksViewControllerDe
         }
 
         if let metadata = metadata {
-            mp4.metadata.merge(metadata)
+            mp4.metadata.merge(metadata, overwrite: true)
             doc.updateChangeCount(.changeDone)
             metadataViewController?.metadata = mp4.metadata
         }

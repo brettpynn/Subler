@@ -35,6 +35,7 @@
 		A91B196C1F2B0DCB0008675F /* QueueAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A91B196B1F2B0DCB0008675F /* QueueAction.swift */; };
 		A91EB969205ABAF400392E1C /* NSWindowAdditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A91EB968205ABAF400392E1C /* NSWindowAdditions.swift */; };
 		A91F0FA023797F2800C9DCC9 /* PropertyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A91F0F9F23797F2800C9DCC9 /* PropertyView.swift */; };
+		A92395043062A588008061F3 /* PasteboardItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92395023062A584008061F3 /* PasteboardItem.swift */; };
 		A924A51E1D4B9E93008301A7 /* MetadataPrefsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A924A5201D4B9E93008301A7 /* MetadataPrefsViewController.xib */; };
 		A925AA8518378D8A00BE84D4 /* MP42Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A925AA8218378D7900BE84D4 /* MP42Foundation.framework */; };
 		A925AA8818378DD000BE84D4 /* MP42Foundation.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = A925AA8218378D7900BE84D4 /* MP42Foundation.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -252,6 +253,7 @@
 		A91B196B1F2B0DCB0008675F /* QueueAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = QueueAction.swift; path = Classes/QueueAction.swift; sourceTree = "<group>"; };
 		A91EB968205ABAF400392E1C /* NSWindowAdditions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NSWindowAdditions.swift; path = Classes/NSWindowAdditions.swift; sourceTree = "<group>"; };
 		A91F0F9F23797F2800C9DCC9 /* PropertyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PropertyView.swift; path = Classes/PropertyView/PropertyView.swift; sourceTree = "<group>"; };
+		A92395023062A584008061F3 /* PasteboardItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteboardItem.swift; sourceTree = "<group>"; };
 		A924A50D1D4B9E66008301A7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Classes/PropertyView/Base.lproj/ChapterView.xib; sourceTree = "<group>"; };
 		A924A50E1D4B9E66008301A7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Classes/PropertyView/Base.lproj/EmptyView.xib; sourceTree = "<group>"; };
 		A924A50F1D4B9E66008301A7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Classes/PropertyView/Base.lproj/MovieView.xib; sourceTree = "<group>"; };
@@ -276,6 +278,66 @@
 		A93105361F9758EC00605146 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/FileImportController.xib; sourceTree = "<group>"; };
 		A932C9F2205C268A004E52FE /* QueueScriptCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = QueueScriptCommand.swift; path = Classes/QueueScriptCommand.swift; sourceTree = "<group>"; };
 		A9395E341F8B9ACA004C402B /* MP42FileAdditions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MP42FileAdditions.swift; path = Classes/MP42FileAdditions.swift; sourceTree = "<group>"; };
+		A939EEE33062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "Classes/PropertyView/pt-BR.lproj/ChapterView.strings"; sourceTree = "<group>"; };
+		A939EEE43062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "Classes/PropertyView/pt-BR.lproj/MovieView.strings"; sourceTree = "<group>"; };
+		A939EEE53062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "Classes/PropertyView/pt-BR.lproj/MultiSelectView.strings"; sourceTree = "<group>"; };
+		A939EEE63062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "Classes/PropertyView/pt-BR.lproj/SoundView.strings"; sourceTree = "<group>"; };
+		A939EEE73062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "Classes/PropertyView/pt-BR.lproj/VideoView.strings"; sourceTree = "<group>"; };
+		A939EEE83062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/DocumentWindowController.strings"; sourceTree = "<group>"; };
+		A939EEE93062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/MetadataPrefsViewController.strings"; sourceTree = "<group>"; };
+		A939EEEA3062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/OCRPrefsViewController.strings"; sourceTree = "<group>"; };
+		A939EEEB3062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/OffsetViewController.strings"; sourceTree = "<group>"; };
+		A939EEEC3062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/OutputPrefsViewController.strings"; sourceTree = "<group>"; };
+		A939EEED3062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "Classes/pt-BR.lproj/PresetEditorViewController.strings"; sourceTree = "<group>"; };
+		A939EEEE3062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/PresetPrefsViewController.strings"; sourceTree = "<group>"; };
+		A939EEEF3062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/ProgressViewController.strings"; sourceTree = "<group>"; };
+		A939EEF03062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/SaveOptions.strings"; sourceTree = "<group>"; };
+		A939EEF13062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/TracksViewController.strings"; sourceTree = "<group>"; };
+		A939EEF23062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/AdvancedPrefsViewController.strings"; sourceTree = "<group>"; };
+		A939EEF33062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/ArtworkSelector.strings"; sourceTree = "<group>"; };
+		A939EEF43062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/FileImportController.strings"; sourceTree = "<group>"; };
+		A939EEF53062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/GeneralPrefsViewController.strings"; sourceTree = "<group>"; };
+		A939EEF63062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		A939EEF73062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		A939EEF83062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/MainMenu.strings"; sourceTree = "<group>"; };
+		A939EEF93062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/MediaTagsController.strings"; sourceTree = "<group>"; };
+		A939EEFA3062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/MetadataSearch.strings"; sourceTree = "<group>"; };
+		A939EEFB3062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/PrefsWindowController.strings"; sourceTree = "<group>"; };
+		A939EEFC3062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Queue.strings"; sourceTree = "<group>"; };
+		A939EEFD3062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/QueueItem.strings"; sourceTree = "<group>"; };
+		A939EEFE3062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/QueueOptions.strings"; sourceTree = "<group>"; };
+		A939EEFF3062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/SBActivityWindow.strings"; sourceTree = "<group>"; };
+		A939EF003062F87300E830A4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/SBChapterSearch.strings"; sourceTree = "<group>"; };
+		A939EF023062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "Classes/PropertyView/zh-CN.lproj/ChapterView.strings"; sourceTree = "<group>"; };
+		A939EF033062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "Classes/PropertyView/zh-CN.lproj/MovieView.strings"; sourceTree = "<group>"; };
+		A939EF043062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "Classes/PropertyView/zh-CN.lproj/MultiSelectView.strings"; sourceTree = "<group>"; };
+		A939EF053062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "Classes/PropertyView/zh-CN.lproj/SoundView.strings"; sourceTree = "<group>"; };
+		A939EF063062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "Classes/PropertyView/zh-CN.lproj/VideoView.strings"; sourceTree = "<group>"; };
+		A939EF073062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/DocumentWindowController.strings"; sourceTree = "<group>"; };
+		A939EF083062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/MetadataPrefsViewController.strings"; sourceTree = "<group>"; };
+		A939EF093062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/OCRPrefsViewController.strings"; sourceTree = "<group>"; };
+		A939EF0A3062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/OffsetViewController.strings"; sourceTree = "<group>"; };
+		A939EF0B3062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/OutputPrefsViewController.strings"; sourceTree = "<group>"; };
+		A939EF0C3062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "Classes/zh-CN.lproj/PresetEditorViewController.strings"; sourceTree = "<group>"; };
+		A939EF0D3062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/PresetPrefsViewController.strings"; sourceTree = "<group>"; };
+		A939EF0E3062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/ProgressViewController.strings"; sourceTree = "<group>"; };
+		A939EF0F3062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/SaveOptions.strings"; sourceTree = "<group>"; };
+		A939EF103062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/TracksViewController.strings"; sourceTree = "<group>"; };
+		A939EF113062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/AdvancedPrefsViewController.strings"; sourceTree = "<group>"; };
+		A939EF123062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/ArtworkSelector.strings"; sourceTree = "<group>"; };
+		A939EF133062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/FileImportController.strings"; sourceTree = "<group>"; };
+		A939EF143062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/GeneralPrefsViewController.strings"; sourceTree = "<group>"; };
+		A939EF153062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		A939EF163062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		A939EF173062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/MainMenu.strings"; sourceTree = "<group>"; };
+		A939EF183062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/MediaTagsController.strings"; sourceTree = "<group>"; };
+		A939EF193062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/MetadataSearch.strings"; sourceTree = "<group>"; };
+		A939EF1A3062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/PrefsWindowController.strings"; sourceTree = "<group>"; };
+		A939EF1B3062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/Queue.strings"; sourceTree = "<group>"; };
+		A939EF1C3062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/QueueItem.strings"; sourceTree = "<group>"; };
+		A939EF1D3062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/QueueOptions.strings"; sourceTree = "<group>"; };
+		A939EF1E3062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/SBActivityWindow.strings"; sourceTree = "<group>"; };
+		A939EF1F3062F8D400E830A4 /* zh-CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-CN"; path = "zh-CN.lproj/SBChapterSearch.strings"; sourceTree = "<group>"; };
 		A9433A8C1F2F5C3600BB38CA /* ChapterResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChapterResult.swift; path = Classes/MetadataImporters/ChapterResult.swift; sourceTree = "<group>"; };
 		A9433A901F2F5D8A00BB38CA /* ChapterDB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChapterDB.swift; path = Classes/MetadataImporters/ChapterDB.swift; sourceTree = "<group>"; };
 		A944E5911F498FC4002E43F6 /* PresetPrefsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PresetPrefsViewController.swift; path = Classes/PresetPrefsViewController.swift; sourceTree = "<group>"; };
@@ -527,6 +589,7 @@
 				A9A77C4D1F306FA70018023B /* AttributedStyles.swift */,
 				A956CE681F99E93D00093992 /* ButtonToolbarItem.swift */,
 				A9E385772C316FBE000A050D /* CollectionView.swift */,
+				A92395023062A584008061F3 /* PasteboardItem.swift */,
 				A9E3857B2C317010000A050D /* FilePromiseProvider.swift */,
 			);
 			name = "Other Sources";
@@ -767,7 +830,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2630;
+				LastUpgradeCheck = 2700;
 				TargetAttributes = {
 					8D15AC270486D014006FF6A4 = {
 						LastSwiftMigration = 1020;
@@ -794,6 +857,8 @@
 				"zh-Hans",
 				fr,
 				"es-419",
+				"pt-BR",
+				"zh-CN",
 			);
 			mainGroup = 2A37F4AAFDCFA73011CA2CEA /* MP4Sub */;
 			packageReferences = (
@@ -945,6 +1010,7 @@
 				A98D44102036F661005CB092 /* AppDelegate.swift in Sources */,
 				A9C31E572029A75F00CEF474 /* GeneralPrefsViewController.swift in Sources */,
 				A9AE26C01F3B66470041A57D /* SquaredTVArt.swift in Sources */,
+				A92395043062A588008061F3 /* PasteboardItem.swift in Sources */,
 				A9B1056E2025D9B9009E91FC /* TracksViewController.swift in Sources */,
 				A9C51DF42E4B4548003E82E6 /* ScriptCommand.swift in Sources */,
 				A99B7FD82D53764F0027BCB5 /* AppleTVv3.swift in Sources */,
@@ -997,6 +1063,8 @@
 				A9E059B02529DCA9000E0E9A /* zh-Hans */,
 				A9146863278D8EFB00860468 /* fr */,
 				A96FE3ED2C355A3D009B3AFC /* es-419 */,
+				A939EEF63062F87300E830A4 /* pt-BR */,
+				A939EF153062F8D400E830A4 /* zh-CN */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -1009,6 +1077,8 @@
 				A9E059B92529DCA9000E0E9A /* zh-Hans */,
 				A914684B278D8EFB00860468 /* fr */,
 				A96FE3D52C355A3D009B3AFC /* es-419 */,
+				A939EEF83062F87300E830A4 /* pt-BR */,
+				A939EF173062F8D400E830A4 /* zh-CN */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";
@@ -1030,6 +1100,8 @@
 				A9E059BA2529DCA9000E0E9A /* zh-Hans */,
 				A9146860278D8EFB00860468 /* fr */,
 				A96FE3EA2C355A3D009B3AFC /* es-419 */,
+				A939EEE53062F87300E830A4 /* pt-BR */,
+				A939EF043062F8D400E830A4 /* zh-CN */,
 			);
 			name = MultiSelectView.xib;
 			sourceTree = "<group>";
@@ -1042,6 +1114,8 @@
 				A9E059C82529DCAA000E0E9A /* zh-Hans */,
 				A914685A278D8EFB00860468 /* fr */,
 				A96FE3E42C355A3D009B3AFC /* es-419 */,
+				A939EEEE3062F87300E830A4 /* pt-BR */,
+				A939EF0D3062F8D400E830A4 /* zh-CN */,
 			);
 			name = PresetPrefsViewController.xib;
 			path = Classes;
@@ -1055,6 +1129,8 @@
 				A9E059BF2529DCAA000E0E9A /* zh-Hans */,
 				A914684E278D8EFB00860468 /* fr */,
 				A96FE3D82C355A3D009B3AFC /* es-419 */,
+				A939EEFB3062F87300E830A4 /* pt-BR */,
+				A939EF1A3062F8D400E830A4 /* zh-CN */,
 			);
 			name = PrefsWindowController.xib;
 			sourceTree = "<group>";
@@ -1076,6 +1152,8 @@
 				A9E059CB2529DCAA000E0E9A /* zh-Hans */,
 				A9146858278D8EFB00860468 /* fr */,
 				A96FE3E22C355A3D009B3AFC /* es-419 */,
+				A939EEEC3062F87300E830A4 /* pt-BR */,
+				A939EF0B3062F8D400E830A4 /* zh-CN */,
 			);
 			name = OutputPrefsViewController.xib;
 			path = Classes;
@@ -1089,6 +1167,8 @@
 				A9E059CD2529DCAA000E0E9A /* zh-Hans */,
 				A9146855278D8EFB00860468 /* fr */,
 				A96FE3DF2C355A3D009B3AFC /* es-419 */,
+				A939EEE93062F87300E830A4 /* pt-BR */,
+				A939EF083062F8D400E830A4 /* zh-CN */,
 			);
 			name = MetadataPrefsViewController.xib;
 			path = Classes;
@@ -1102,6 +1182,8 @@
 				A9E059C12529DCAA000E0E9A /* zh-Hans */,
 				A9146859278D8EFB00860468 /* fr */,
 				A96FE3E32C355A3D009B3AFC /* es-419 */,
+				A939EEED3062F87300E830A4 /* pt-BR */,
+				A939EF0C3062F8D400E830A4 /* zh-CN */,
 			);
 			name = PresetEditorViewController.xib;
 			sourceTree = "<group>";
@@ -1114,6 +1196,8 @@
 				A9E059C22529DCAA000E0E9A /* zh-Hans */,
 				A9146849278D8EFB00860468 /* fr */,
 				A96FE3D32C355A3D009B3AFC /* es-419 */,
+				A939EEF43062F87300E830A4 /* pt-BR */,
+				A939EF133062F8D400E830A4 /* zh-CN */,
 			);
 			name = FileImportController.xib;
 			sourceTree = "<group>";
@@ -1126,6 +1210,8 @@
 				A9E059C92529DCAA000E0E9A /* zh-Hans */,
 				A914684F278D8EFB00860468 /* fr */,
 				A96FE3D92C355A3D009B3AFC /* es-419 */,
+				A939EEFC3062F87300E830A4 /* pt-BR */,
+				A939EF1B3062F8D400E830A4 /* zh-CN */,
 			);
 			name = Queue.xib;
 			sourceTree = "<group>";
@@ -1138,6 +1224,8 @@
 				A9E059B82529DCA9000E0E9A /* zh-Hans */,
 				A9146848278D8EFB00860468 /* fr */,
 				A96FE3D22C355A3D009B3AFC /* es-419 */,
+				A939EEF33062F87300E830A4 /* pt-BR */,
+				A939EF123062F8D400E830A4 /* zh-CN */,
 			);
 			name = ArtworkSelector.xib;
 			sourceTree = "<group>";
@@ -1150,6 +1238,8 @@
 				A9E059C62529DCAA000E0E9A /* zh-Hans */,
 				A914684C278D8EFB00860468 /* fr */,
 				A96FE3D62C355A3D009B3AFC /* es-419 */,
+				A939EEF93062F87300E830A4 /* pt-BR */,
+				A939EF183062F8D400E830A4 /* zh-CN */,
 			);
 			name = MediaTagsController.xib;
 			sourceTree = "<group>";
@@ -1162,6 +1252,8 @@
 				A9E059B52529DCA9000E0E9A /* zh-Hans */,
 				A914685C278D8EFB00860468 /* fr */,
 				A96FE3E62C355A3D009B3AFC /* es-419 */,
+				A939EEF03062F87300E830A4 /* pt-BR */,
+				A939EF0F3062F8D400E830A4 /* zh-CN */,
 			);
 			name = SaveOptions.xib;
 			path = Classes;
@@ -1175,6 +1267,8 @@
 				A9E059C72529DCAA000E0E9A /* zh-Hans */,
 				A914685B278D8EFB00860468 /* fr */,
 				A96FE3E52C355A3D009B3AFC /* es-419 */,
+				A939EEEF3062F87300E830A4 /* pt-BR */,
+				A939EF0E3062F8D400E830A4 /* zh-CN */,
 			);
 			name = ProgressViewController.xib;
 			path = Classes;
@@ -1188,6 +1282,8 @@
 				A9E059BC2529DCA9000E0E9A /* zh-Hans */,
 				A914685E278D8EFB00860468 /* fr */,
 				A96FE3E82C355A3D009B3AFC /* es-419 */,
+				A939EEE33062F87300E830A4 /* pt-BR */,
+				A939EF023062F8D400E830A4 /* zh-CN */,
 			);
 			name = ChapterView.xib;
 			sourceTree = "<group>";
@@ -1209,6 +1305,8 @@
 				A9E059B62529DCA9000E0E9A /* zh-Hans */,
 				A914685F278D8EFB00860468 /* fr */,
 				A96FE3E92C355A3D009B3AFC /* es-419 */,
+				A939EEE43062F87300E830A4 /* pt-BR */,
+				A939EF033062F8D400E830A4 /* zh-CN */,
 			);
 			name = MovieView.xib;
 			sourceTree = "<group>";
@@ -1221,6 +1319,8 @@
 				A9E059C42529DCAA000E0E9A /* zh-Hans */,
 				A9146861278D8EFB00860468 /* fr */,
 				A96FE3EB2C355A3D009B3AFC /* es-419 */,
+				A939EEE63062F87300E830A4 /* pt-BR */,
+				A939EF053062F8D400E830A4 /* zh-CN */,
 			);
 			name = SoundView.xib;
 			sourceTree = "<group>";
@@ -1233,6 +1333,8 @@
 				A9E059C32529DCAA000E0E9A /* zh-Hans */,
 				A9146862278D8EFB00860468 /* fr */,
 				A96FE3EC2C355A3D009B3AFC /* es-419 */,
+				A939EEE73062F87300E830A4 /* pt-BR */,
+				A939EF063062F8D400E830A4 /* zh-CN */,
 			);
 			name = VideoView.xib;
 			sourceTree = "<group>";
@@ -1245,6 +1347,8 @@
 				A9E059BB2529DCA9000E0E9A /* zh-Hans */,
 				A9146856278D8EFB00860468 /* fr */,
 				A96FE3E02C355A3D009B3AFC /* es-419 */,
+				A939EEEA3062F87300E830A4 /* pt-BR */,
+				A939EF093062F8D400E830A4 /* zh-CN */,
 			);
 			name = OCRPrefsViewController.xib;
 			path = Classes;
@@ -1257,6 +1361,8 @@
 				A9E059B12529DCA9000E0E9A /* zh-Hans */,
 				A9146864278D8EFB00860468 /* fr */,
 				A96FE3EE2C355A3D009B3AFC /* es-419 */,
+				A939EEF73062F87300E830A4 /* pt-BR */,
+				A939EF163062F8D400E830A4 /* zh-CN */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -1269,6 +1375,8 @@
 				A9E059CA2529DCAA000E0E9A /* zh-Hans */,
 				A9146850278D8EFB00860468 /* fr */,
 				A96FE3DA2C355A3D009B3AFC /* es-419 */,
+				A939EEFD3062F87300E830A4 /* pt-BR */,
+				A939EF1C3062F8D400E830A4 /* zh-CN */,
 			);
 			name = QueueItem.xib;
 			sourceTree = "<group>";
@@ -1281,6 +1389,8 @@
 				A9E059B42529DCA9000E0E9A /* zh-Hans */,
 				A914684A278D8EFB00860468 /* fr */,
 				A96FE3D42C355A3D009B3AFC /* es-419 */,
+				A939EEF53062F87300E830A4 /* pt-BR */,
+				A939EF143062F8D400E830A4 /* zh-CN */,
 			);
 			name = GeneralPrefsViewController.xib;
 			sourceTree = "<group>";
@@ -1293,6 +1403,8 @@
 				A9E059C02529DCAA000E0E9A /* zh-Hans */,
 				A9146847278D8EFB00860468 /* fr */,
 				A96FE3D12C355A3D009B3AFC /* es-419 */,
+				A939EEF23062F87300E830A4 /* pt-BR */,
+				A939EF113062F8D400E830A4 /* zh-CN */,
 			);
 			name = AdvancedPrefsViewController.xib;
 			sourceTree = "<group>";
@@ -1305,6 +1417,8 @@
 				A9E059BD2529DCAA000E0E9A /* zh-Hans */,
 				A9146852278D8EFB00860468 /* fr */,
 				A96FE3DC2C355A3D009B3AFC /* es-419 */,
+				A939EEFF3062F87300E830A4 /* pt-BR */,
+				A939EF1E3062F8D400E830A4 /* zh-CN */,
 			);
 			name = SBActivityWindow.xib;
 			sourceTree = "<group>";
@@ -1317,6 +1431,8 @@
 				A9E059B22529DCA9000E0E9A /* zh-Hans */,
 				A9146853278D8EFB00860468 /* fr */,
 				A96FE3DD2C355A3D009B3AFC /* es-419 */,
+				A939EF003062F87300E830A4 /* pt-BR */,
+				A939EF1F3062F8D400E830A4 /* zh-CN */,
 			);
 			name = SBChapterSearch.xib;
 			sourceTree = "<group>";
@@ -1329,6 +1445,8 @@
 				A9E059CC2529DCAA000E0E9A /* zh-Hans */,
 				A9146854278D8EFB00860468 /* fr */,
 				A96FE3DE2C355A3D009B3AFC /* es-419 */,
+				A939EEE83062F87300E830A4 /* pt-BR */,
+				A939EF073062F8D400E830A4 /* zh-CN */,
 			);
 			name = DocumentWindowController.xib;
 			path = Classes;
@@ -1342,6 +1460,8 @@
 				A9E059B72529DCA9000E0E9A /* zh-Hans */,
 				A914685D278D8EFB00860468 /* fr */,
 				A96FE3E72C355A3D009B3AFC /* es-419 */,
+				A939EEF13062F87300E830A4 /* pt-BR */,
+				A939EF103062F8D400E830A4 /* zh-CN */,
 			);
 			name = TracksViewController.xib;
 			path = Classes;
@@ -1364,6 +1484,8 @@
 				A9E059C52529DCAA000E0E9A /* zh-Hans */,
 				A9146857278D8EFB00860468 /* fr */,
 				A96FE3E12C355A3D009B3AFC /* es-419 */,
+				A939EEEB3062F87300E830A4 /* pt-BR */,
+				A939EF0A3062F8D400E830A4 /* zh-CN */,
 			);
 			name = OffsetViewController.xib;
 			path = Classes;
@@ -1377,6 +1499,8 @@
 				A9E059BE2529DCAA000E0E9A /* zh-Hans */,
 				A9146851278D8EFB00860468 /* fr */,
 				A96FE3DB2C355A3D009B3AFC /* es-419 */,
+				A939EEFE3062F87300E830A4 /* pt-BR */,
+				A939EF1D3062F8D400E830A4 /* zh-CN */,
 			);
 			name = QueueOptions.xib;
 			sourceTree = "<group>";
@@ -1389,6 +1513,8 @@
 				A9E059B32529DCA9000E0E9A /* zh-Hans */,
 				A914684D278D8EFB00860468 /* fr */,
 				A96FE3D72C355A3D009B3AFC /* es-419 */,
+				A939EEFA3062F87300E830A4 /* pt-BR */,
+				A939EF193062F8D400E830A4 /* zh-CN */,
 			);
 			name = MetadataSearch.xib;
 			sourceTree = "<group>";
@@ -1411,7 +1537,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1.9.2;
+				CURRENT_PROJECT_VERSION = 1.9.3;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = "";
@@ -1431,7 +1557,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.9.2;
+				MARKETING_VERSION = 1.9.3;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "-Wl,-rpath,@loader_path/../Frameworks";
 				OTHER_SWIFT_FLAGS = "";
@@ -1457,7 +1583,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.9.2;
+				CURRENT_PROJECT_VERSION = 1.9.3;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
@@ -1476,7 +1602,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.9.2;
+				MARKETING_VERSION = 1.9.3;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "-Wl,-rpath,@loader_path/../Frameworks";
 				OTHER_SWIFT_FLAGS = "";
