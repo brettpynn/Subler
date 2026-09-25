@@ -269,6 +269,9 @@ Undo tag insert. */
 /* Toolbar */
 "Insert a chapter every" = "Inserisci un capitolo ogni";
 
+/* color profile */
+"IPT-C2 (9-16-15)" = "IPT-C2 (9-16-15)";
+
 /* nil */
 "iTunes Country" = "Stato iTunes";
 
@@ -382,6 +385,9 @@ Undo tag insert. */
 
 /* File Import action menu item. */
 "Passthru" = "Passthru";
+
+/* Toolbar */
+"Perform tasks with the selected items" = "Esegui azioni con gli elementi selezionati";
 
 /* nil */
 "playlistID" = "playlistID";
@@ -557,7 +563,7 @@ Toolbar */
 "Show queue" = "Mostra la coda";
 
 /* Toolbar */
-"Show the Queue window" = "Mostra la finestra della Cosa";
+"Show the Queue window" = "Mostra la finestra della Coda";
 
 /* Toolbar */
 "Show/Hide settings" = "Mostra/nascondi impostazioni";
@@ -621,6 +627,9 @@ Toolbar */
 
 /* File Import action menu item. */
 "Tx3g" = "Tx3g";
+
+/* color profile */
+"Undefined (2-2-2)" = "Non definito (2-2-2)";
 
 /* No comment provided by engineer. */
 "Unknown" = "Sconosciuta";

@@ -64,12 +64,19 @@ public struct TheTVDB : MetadataService {
 
         return false
     }
+  
+//  private func searchIDs(seriesName: String) -> [String] {
+//      let searchName = seriesName.removingTrailingYear
+//      let series = session.fetch(series: searchName)
+//      let sorted = series.sorted { el1, el2 -> Bool in
+//          return el1.name?.caseInsensitiveCompare(searchName) == .orderedSame ? true : false
 
-    private func searchIDs(seriesName: String) -> [String] {
-        let searchName = seriesName.removingTrailingYear
-        let series = session.fetch(series: searchName)
+    private func searchIDs(seriesName: String, language: String) -> [String] {
+        let series = session.fetch(series: seriesName)
         let sorted = series.sorted { el1, el2 -> Bool in
-            return el1.name?.caseInsensitiveCompare(searchName) == .orderedSame ? true : false
+            let name = el1.translations?[language] ?? el1.name
+            let order = name?.caseInsensitiveCompare(seriesName)
+            return order == .orderedSame ? true : false
         }
         let filteredSeries = sorted.filter { $0.status?.isEmpty == false && match(series: $0, name: searchName) }.map { $0.tvdb_id }
 
@@ -149,8 +156,8 @@ public struct TheTVDB : MetadataService {
                 size = .square
             case (let width, let height) where width >= height:
                 size = .rectangle
-            case (let width, let height) where height < width:
-                size = .default
+            case (let width, let height) where height > width:
+                size = .standard
             default:
                 break
             }
@@ -197,8 +204,8 @@ public struct TheTVDB : MetadataService {
                 size = .square
             case (let width, let height) where width >= height:
                 size = .rectangle
-            case (let width, let height) where height < width:
-                size = .default
+            case (let width, let height) where height > width:
+                size = .standard
             default:
                 break
             }
@@ -340,7 +347,7 @@ public struct TheTVDB : MetadataService {
     // MARK: - TV Search
 
     public func search(tvShow: String, language: String, season: Int?, episode: Int?) -> [MetadataResult] {
-        let seriesIDs: [String] = self.searchIDs(seriesName: tvShow)
+        let seriesIDs: [String] = self.searchIDs(seriesName: tvShow, language: language)
 
         for id in seriesIDs {
             if let info = session.fetch(seriesInfo: id) {

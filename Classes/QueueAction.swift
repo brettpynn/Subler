@@ -304,7 +304,7 @@ class QueueMetadataAction : NSObject, QueueActionProtocol {
                                                       extendedLanguageTag: nil))
                 }
 
-                file.metadata.merge(metadata)
+                file.metadata.merge(metadata, overwrite: true)
                 return true
             }
         }
