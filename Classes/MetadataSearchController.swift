@@ -9,7 +9,7 @@ import Cocoa
 import MP42Foundation
 
 protocol MetadataSearchControllerDelegate : AnyObject {
-    func didSelect(metadata: MetadataResult?)
+    func didSelect(metadata: MetadataResult?, service: String?)
 }
 
 final class MetadataSearchController: NSViewController, NSTableViewDataSource, NSTableViewDelegate, NSComboBoxDelegate, NSComboBoxDataSource, NSTextFieldDelegate {
@@ -312,7 +312,7 @@ final class MetadataSearchController: NSViewController, NSTableViewDataSource, N
                     MetadataSearchController.saveRecentSearches(previousTVSeries)
                 }
             }
-            delegate?.didSelect(metadata: result)
+            delegate?.didSelect(metadata: result, service: search.serviceName)
         default:
             break
         }
@@ -320,7 +320,7 @@ final class MetadataSearchController: NSViewController, NSTableViewDataSource, N
 
     @IBAction func closeWindow(_ sender: Any) {
         cancelSearch()
-        delegate?.didSelect(metadata: nil)
+        delegate?.didSelect(metadata: nil, service: nil)
     }
 
     // MARK - UI state

@@ -133,14 +133,18 @@ final class ArtworkSelectorController: NSViewController, NSCollectionViewDataSou
     @IBOutlet var slider: NSSlider!
     @IBOutlet var addArtworkButton: NSButton!
     @IBOutlet var loadMoreArtworkButton: NSButton!
+    @IBOutlet var otherProvidersButton: NSButton!
 
     @IBOutlet var progress: NSProgressIndicator!
     @IBOutlet var progressText: NSTextField!
 
+    private let allArtworks: [Artwork]
     private var artworksUnloaded: [Artwork]
     private var artworks: [ArtworkImageObject]
+    private var loadedArtworkCount = 8
     private let standardSize = NSSize(width: 154, height: 192)
     private let metadata: MetadataResult
+    private let service: String?
 
     private weak var delegate: ArtworkSelectorControllerDelegate?
 
@@ -154,11 +158,13 @@ final class ArtworkSelectorController: NSViewController, NSCollectionViewDataSou
     private var state: ArtworkSearchState = .none
 
     // MARK: - Init
-    init(metadata: MetadataResult, delegate: ArtworkSelectorControllerDelegate) {
+    init(metadata: MetadataResult, service: String?, delegate: ArtworkSelectorControllerDelegate) {
         self.delegate = delegate
+        self.allArtworks = metadata.remoteArtworks
         self.artworksUnloaded = metadata.remoteArtworks
         self.artworks = []
         self.metadata = metadata
+        self.service = service
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -186,6 +192,7 @@ final class ArtworkSelectorController: NSViewController, NSCollectionViewDataSou
         view.wantsLayer = true
 
         imageBrowser.register(ArtworkSelectorViewItem.self, forItemWithIdentifier: ArtworkSelectorController.itemView)
+        artworksUnloaded = availableArtworks()
         loadMoreArtworks(count: 8)
 
         let type = metadata.mediaKind.description
@@ -211,6 +218,35 @@ final class ArtworkSelectorController: NSViewController, NSCollectionViewDataSou
 
     @IBAction func loadMoreArtwork(_ sender: Any) {
         loadMoreArtworks(count: 8)
+    }
+
+    @IBAction func toggleOtherProviders(_ sender: Any) {
+        reloadArtworks()
+    }
+
+    private func availableArtworks() -> [Artwork] {
+        let selected = allArtworks.filter { $0.service == service }
+        guard otherProvidersButton.state == .on else { return selected }
+        return selected + allArtworks.filter { $0.service != service }
+    }
+
+    private func reloadArtworks() {
+        for artwork in artworks {
+            artwork.cancel()
+        }
+
+        artworksUnloaded = availableArtworks()
+        let count = min(loadedArtworkCount, artworksUnloaded.count)
+        artworks = artworksUnloaded.prefix(count).map { ArtworkImageObject(artwork: $0, delegate: self) }
+        artworksUnloaded.removeFirst(count)
+        loadMoreArtworkButton.isEnabled = artworksUnloaded.isEmpty == false
+        imageBrowser.reloadData()
+
+        if artworks.isEmpty {
+            addArtworkButton.isEnabled = false
+        } else {
+            selectArtwork(at: 0)
+        }
     }
 
     // MARK: - User Interface
@@ -260,6 +296,7 @@ final class ArtworkSelectorController: NSViewController, NSCollectionViewDataSou
 
         artworks.append(contentsOf: newArtworks.map {  ArtworkImageObject(artwork: $0, delegate: self) })
         artworksUnloaded.removeFirst(endIndex)
+        loadedArtworkCount = max(loadedArtworkCount, artworks.count)
         loadMoreArtworkButton.isEnabled = artworksUnloaded.isEmpty == false
 
         let range = (artworks.count - endIndex ..< artworks.count)
@@ -300,7 +337,7 @@ final class ArtworkSelectorController: NSViewController, NSCollectionViewDataSou
     // MARK - UI state
 
     private func disableUI() {
-        [slider, addArtworkButton, loadMoreArtworkButton].forEach { $0.isEnabled = false }
+        [slider, addArtworkButton, loadMoreArtworkButton, otherProvidersButton].forEach { $0.isEnabled = false }
         imageBrowser.isSelectable = false
     }
 

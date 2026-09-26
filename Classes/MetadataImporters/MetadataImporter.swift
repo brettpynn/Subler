@@ -119,6 +119,15 @@ public enum MetadataSearch {
         }
     }
 
+    public var serviceName: String {
+        switch self {
+        case let .movieSeach(service, _, _):
+            return service.name
+        case let .tvSearch(service, _, _, _, _):
+            return service.name
+        }
+    }
+
     public var type: MetadataType {
         switch self {
         case .movieSeach:

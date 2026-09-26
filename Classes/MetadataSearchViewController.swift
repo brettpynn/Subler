@@ -53,13 +53,13 @@ class MetadataSearchViewController: ViewController, MetadataSearchControllerDele
         super.transition(from: fromViewController, to: toViewController, options: options, completionHandler: completion)
     }
 
-    func didSelect(metadata: MetadataResult?) {
+    func didSelect(metadata: MetadataResult?, service: String?) {
         if let result = metadata {
             if result.remoteArtworks.isEmpty {
                 delegate?.didSelect(metadata: result)
                 presentingViewController?.dismiss(self)
             } else {
-                let controller = ArtworkSelectorController(metadata: result, delegate: self)
+                let controller = ArtworkSelectorController(metadata: result, service: service, delegate: self)
                 artworkViewController = controller
                 transition(from: metadataViewController, to: controller, options: [.slideForward], completionHandler: {
                     self.removeChild(at: 0)
