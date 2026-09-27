@@ -331,7 +331,7 @@ public struct iTunesStore: MetadataService {
             let artworkFullSizeURL = URL(string: text.replacingOccurrences(of: "100x100bb", with: replacement)) {
             let size = isTVShow ? ArtworkSize.square : .standard
             let type = isTVShow ? ArtworkType.season : .poster
-            return Artwork(url:artworkFullSizeURL, thumbURL: artworkURL, service: self.name, type: type, size: size)
+            return Artwork(url: artworkFullSizeURL, thumbURL: artworkURL, service: self.name, type: type, size: size, width: isTVShow ? 800 : 1000, height: isTVShow ? 800 : 1000)
         }
 
         return nil

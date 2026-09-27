@@ -93,6 +93,18 @@ public struct Artwork: Equatable, Hashable {
     public let service: String
     public let type: ArtworkType
     public let size: ArtworkSize
+    public let width: Int?
+    public let height: Int?
+
+    public init(url: URL, thumbURL: URL, service: String, type: ArtworkType, size: ArtworkSize, width: Int? = nil, height: Int? = nil) {
+        self.url = url
+        self.thumbURL = thumbURL
+        self.service = service
+        self.type = type
+        self.size = size
+        self.width = width
+        self.height = height
+    }
 
     public static func == (lhs: Artwork, rhs: Artwork) -> Bool {
         return lhs.url == rhs.url

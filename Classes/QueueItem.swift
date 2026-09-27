@@ -460,7 +460,8 @@ import MP42Foundation
                                                      QueueRenameChaptersAction.classForCoder(),
                                                      QueueOrganizeGroupsAction.classForCoder(), QueueColorSpaceAction.classForCoder(),
                                                      QueueSetOutputFilenameAction.classForCoder(), QueueClearExistingMetadataAction.classForCoder(),
-                                                     QueueOptimizeAction.classForCoder(), QueueSendToiTunesAction.classForCoder()], forKey: "SBQueueItemActions") as! [QueueActionProtocol]
+                                                     QueueOptimizeAction.classForCoder(), QueueSendToiTunesAction.classForCoder(),
+                                                     QueueChangeAudioLanguageAction.classForCoder(), QueueChangeSubtitleLanguageAction.classForCoder()], forKey: "SBQueueItemActions") as? [QueueActionProtocol] ?? []
     }
 }
 

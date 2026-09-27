@@ -31,7 +31,7 @@ private extension MetadataResult {
         self[.iTunesURL]       = item.url
         self[.serviceContentID] = item.id
 
-        self.remoteArtworks = [item.images.coverArt16X9, item.images.coverArt].compactMap { $0?.artwork(type: .poster) }
+        self.remoteArtworks = [item.images.coverArt, item.images.coverArt16X9].compactMap { $0?.artwork(type: .poster) }
     }
 
     convenience init(item: AppleTV.Item, episode: AppleTV.Episode, store: iTunesStore.Store) {
@@ -65,8 +65,8 @@ private extension MetadataResult {
             self[.releaseDate] = Date(timeIntervalSince1970: releaseDate / 1000)
         }
 
-        self.remoteArtworks = [item.images.coverArt16X9, item.images.coverArt].compactMap { $0?.artwork(type: .poster) }
-        self.remoteArtworks += [episode.seasonImages.coverArt16X9, episode.seasonImages.coverArt].compactMap { $0?.artwork(type: .season) }
+        self.remoteArtworks = [item.images.coverArt, item.images.coverArt16X9].compactMap { $0?.artwork(type: .poster) }
+        self.remoteArtworks += [episode.seasonImages.coverArt, episode.seasonImages.coverArt16X9].compactMap { $0?.artwork(type: .season) }
         self.remoteArtworks += [episode.images.previewFrame].compactMap { $0?.artwork(type: .episode) }
     }
 
@@ -220,23 +220,48 @@ public struct AppleTV: MetadataService {
     private func searchSeasons(id: String,  season: Int, store: iTunesStore.Store) -> [Artwork] {
         let urlString = "\(seasonsURL)\(id)/itunesSeasons?sf=\(store.storeCode)&locale=\(store.language2)\(options)"
         if let url = URL(string: urlString), let results = sendJSONRequest(url: url, type: Wrapper<Seasons>.self) {
-            let filteredResults =  results.data.seasons.values.joined().filter { $0.seasonNumber == season }
-            return filteredResults.compactMap { $0.images.coverArt16X9?.artwork(type: .season) }
+            let filteredResults = results.data.seasons.values.joined().filter { $0.seasonNumber == season }
+            return filteredResults.flatMap { result in
+                [result.images.coverArt, result.images.coverArt16X9].compactMap { $0?.artwork(type: .season) }
+            }
         }
         return []
     }
 
-    func searchArtwork(term: String, store: iTunesStore.Store, type: MediaType = .movie) -> [Artwork] {
+    func searchArtwork(term: String, store: iTunesStore.Store, type: MediaType = .movie, preferredYear: Int? = nil) -> [Artwork] {
         let normalizedTerm = normalize(term)
 
-        if let url = URL(string: "\(searchURL)&sf=\(store.storeCode)&locale=\(store.language2)\(options)&q=\(normalizedTerm.urlEncoded())"),
+        // A year-qualified query is important for rebooted series that share
+        // exactly the same title (for example Doctor Who). Apple can otherwise
+        // rank the older series ahead of the selected metadata series.
+        let queryTerm = preferredYear.map { "\(normalizedTerm) \($0)" } ?? normalizedTerm
+        if let url = URL(string: "\(searchURL)&sf=\(store.storeCode)&locale=\(store.language2)\(options)&q=\(queryTerm.urlEncoded())"),
             let results = sendJSONRequest(url: url, type: Wrapper<Results>.self) {
 
             let filteredResult = { () -> Item? in
-                let items = results.data.canvas?.shelves.first?.items
+                let items = results.data.canvas?.shelves
+                    .flatMap { $0.items }
                     .filter { $0.type == type.description }
 
-                if let result = items?.filter({ $0.title == normalizedTerm }).first {
+                let exactMatches = items?.filter { $0.title == normalizedTerm } ?? []
+                if let preferredYear {
+                    // Prefer the closest dated exact-title result and never
+                    // silently fall back to a clearly different incarnation.
+                    let dated = exactMatches.compactMap { item -> (Item, Int)? in
+                        guard let year = item.releaseYear else { return nil }
+                        return (item, abs(year - preferredYear))
+                    }.sorted { $0.1 < $1.1 }
+                    if let best = dated.first, best.1 <= 2 {
+                        return best.0
+                    }
+                    // Results from the year-qualified query may omit a series
+                    // release date. In that case an undated exact title is a
+                    // safer fallback than a dated result from the wrong era.
+                    if let undated = exactMatches.first(where: { $0.releaseYear == nil }) {
+                        return undated
+                    }
+                    return nil
+                } else if let result = exactMatches.first {
                     return result
                 } else if let result = items?.filter({ $0.title?.minimumEditDistance(other: normalizedTerm) ?? Int.max < 8 }).first {
                     return result
@@ -247,14 +272,17 @@ public struct AppleTV: MetadataService {
 
             if let filteredResult = filteredResult {
 
-                if let artworks = filteredResult.images.coverArt16X9?.artwork(type: .poster) {
+                // Apple exposes both portrait cover art and 16:9 cover art.
+                // Keep both, with the portrait poster first so provider balancing
+                // does not fill Apple's initial slots with backdrops.
+                let artworks = [filteredResult.images.coverArt, filteredResult.images.coverArt16X9]
+                    .compactMap { $0?.artwork(type: .poster) }
 
-                    if case let MediaType.tvShow(season) = type {
-                        if let season = season {
-                            return [artworks] + searchSeasons(id: filteredResult.id, season: season, store: store)
-                        }
+                if artworks.isEmpty == false {
+                    if case let MediaType.tvShow(season) = type, let season = season {
+                        return artworks + searchSeasons(id: filteredResult.id, season: season, store: store)
                     }
-                    return [artworks]
+                    return artworks
                 }
             }
         }
@@ -372,7 +400,7 @@ public struct AppleTV: MetadataService {
         func artwork(type: ArtworkType) -> Artwork? {
             let baseURL = url.replacingOccurrences(of: "{w}x{h}.{f}", with: "")
             if let artworkURL = URL(string: baseURL + fullSize), let thumbURL = URL(string: baseURL + thumbSize) {
-                return Artwork(url: artworkURL, thumbURL: thumbURL, service: "Apple TV", type: type, size: size)
+                return Artwork(url: artworkURL, thumbURL: thumbURL, service: "Apple TV", type: type, size: size, width: Int(width), height: Int(height))
             } else {
                 return nil
             }
@@ -428,6 +456,11 @@ public struct AppleTV: MetadataService {
         let title: String?
         let type: String
         let url: String
+
+        var releaseYear: Int? {
+            guard let releaseDate else { return nil }
+            return Calendar(identifier: .gregorian).component(.year, from: Date(timeIntervalSince1970: releaseDate / 1000))
+        }
 
         var formattedDate: String? {
             if let date = releaseDate {

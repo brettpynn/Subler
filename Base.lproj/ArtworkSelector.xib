@@ -11,6 +11,8 @@
                 <outlet property="addArtworkButton" destination="fCL-eV-Fib" id="HSP-q9-au1"/>
                 <outlet property="imageBrowser" destination="234-cJ-3Un" id="WQ5-6l-hLv"/>
                 <outlet property="loadMoreArtworkButton" destination="iH5-SJ-sDV" id="AaQ-Ti-f6l"/>
+                <outlet property="filterButton" destination="flt-btn" id="flt-out"/>
+                <outlet property="sortButton" destination="srt-btn" id="srt-out"/>
                 <outlet property="progress" destination="AYL-Jp-agY" id="7lH-Ug-dos"/>
                 <outlet property="progressText" destination="NEi-uU-Lh7" id="nIf-3x-UiN"/>
                 <outlet property="slider" destination="fMj-Ew-Qej" id="K1J-fq-A0m"/>
@@ -35,6 +37,24 @@ DQ
                     </buttonCell>
                     <connections>
                         <action selector="addArtwork:" target="-2" id="eGv-gN-uXf"/>
+                    </connections>
+                </button>
+                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="srt-btn">
+                    <rect key="frame" x="176" y="15" width="32" height="28"/>
+                    <buttonCell key="cell" type="push" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="srt-cell">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="showSortMenu:" target="-2" id="srt-act"/>
+                    </connections>
+                </button>
+                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="flt-btn">
+                    <rect key="frame" x="208" y="15" width="32" height="28"/>
+                    <buttonCell key="cell" type="push" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="flt-cell">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="showFilterMenu:" target="-2" id="flt-act"/>
                     </connections>
                 </button>
                 <slider verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fMj-Ew-Qej">
@@ -116,12 +136,15 @@ Gw
                 </textField>
             </subviews>
             <constraints>
+                <constraint firstItem="srt-btn" firstAttribute="leading" secondItem="iH5-SJ-sDV" secondAttribute="trailing" constant="8" id="load-sort-gap"/>
+                <constraint firstItem="flt-btn" firstAttribute="leading" secondItem="srt-btn" secondAttribute="trailing" constant="4" id="sort-filter-gap"/>
+                <constraint firstItem="srt-btn" firstAttribute="centerY" secondItem="iH5-SJ-sDV" secondAttribute="centerY" id="sort-load-center"/>
+                <constraint firstItem="flt-btn" firstAttribute="centerY" secondItem="iH5-SJ-sDV" secondAttribute="centerY" id="filter-load-center"/>
                 <constraint firstItem="fMj-Ew-Qej" firstAttribute="top" secondItem="c0O-We-pZd" secondAttribute="bottom" constant="8" symbolic="YES" id="1F8-2H-ql1"/>
                 <constraint firstItem="iH5-SJ-sDV" firstAttribute="baseline" secondItem="Zyu-WY-ltM" secondAttribute="baseline" id="1hD-5N-Mi4"/>
                 <constraint firstItem="fMj-Ew-Qej" firstAttribute="trailing" secondItem="fCL-eV-Fib" secondAttribute="trailing" id="4rc-7P-Ji5"/>
                 <constraint firstItem="fCL-eV-Fib" firstAttribute="top" secondItem="fMj-Ew-Qej" secondAttribute="bottom" constant="10" id="89D-4X-bUH"/>
                 <constraint firstItem="fCL-eV-Fib" firstAttribute="leading" secondItem="Zyu-WY-ltM" secondAttribute="trailing" constant="12" symbolic="YES" id="A6C-Bg-TgV"/>
-                <constraint firstItem="Zyu-WY-ltM" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="iH5-SJ-sDV" secondAttribute="trailing" constant="12" symbolic="YES" id="IYX-sN-6GS"/>
                 <constraint firstAttribute="bottom" secondItem="AYL-Jp-agY" secondAttribute="bottom" constant="20" symbolic="YES" id="c0Q-Bt-s8Q"/>
                 <constraint firstItem="NEi-uU-Lh7" firstAttribute="leading" secondItem="AYL-Jp-agY" secondAttribute="trailing" constant="7" id="dbl-RC-7wB"/>
                 <constraint firstItem="Zyu-WY-ltM" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="NEi-uU-Lh7" secondAttribute="trailing" constant="8" symbolic="YES" id="g4g-af-tke"/>

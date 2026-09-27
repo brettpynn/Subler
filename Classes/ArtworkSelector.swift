@@ -21,6 +21,7 @@ private class ArtworkImageObject : Equatable {
     private var data: Data?
     private var version: Int
     private var cancelled: Bool
+    private var finished: Bool
     fileprivate let source: Artwork
     private let queue: DispatchQueue
     private weak var delegate: ArtworkImageObjectDelegate?
@@ -30,6 +31,7 @@ private class ArtworkImageObject : Equatable {
         self.delegate = delegate
         self.version = 0
         self.cancelled = false
+        self.finished = false
         self.queue = DispatchQueue(label: "artworkQueue")
     }
 
@@ -66,6 +68,7 @@ private class ArtworkImageObject : Equatable {
                 self.queue.sync {
                     self.data = localData
                     self.version = 2
+                    self.finished = true
                     localCancelled = self.cancelled
                 }
 
@@ -86,6 +89,10 @@ private class ArtworkImageObject : Equatable {
             }
         }
         return localData
+    }
+
+    var hasFinishedLoading: Bool {
+        return queue.sync { finished }
     }
 
     var imageTitle: String {
@@ -133,14 +140,38 @@ final class ArtworkSelectorController: NSViewController, NSCollectionViewDataSou
     @IBOutlet var slider: NSSlider!
     @IBOutlet var addArtworkButton: NSButton!
     @IBOutlet var loadMoreArtworkButton: NSButton!
+    @IBOutlet var sortButton: NSButton!
+    @IBOutlet var filterButton: NSButton!
 
     @IBOutlet var progress: NSProgressIndicator!
     @IBOutlet var progressText: NSTextField!
 
-    private var artworksUnloaded: [Artwork]
+    private let allArtworks: [Artwork]
     private var artworks: [ArtworkImageObject]
     private let standardSize = NSSize(width: 154, height: 192)
     private let metadata: MetadataResult
+    private var itemsPerProvider = 5
+    private var failedThumbnailURLs = Set<URL>()
+
+    private enum ArtworkSort: String {
+        case original
+        case quality
+    }
+
+    private var artworkSort: ArtworkSort {
+        get { ArtworkSort(rawValue: UserDefaults.standard.string(forKey: "SBArtworkSelectorSort") ?? "") ?? .original }
+        set { UserDefaults.standard.set(newValue.rawValue, forKey: "SBArtworkSelectorSort") }
+    }
+
+    private var sortAscending: Bool {
+        get { UserDefaults.standard.object(forKey: "SBArtworkSelectorSortAscending") as? Bool ?? false }
+        set { UserDefaults.standard.set(newValue, forKey: "SBArtworkSelectorSortAscending") }
+    }
+
+    private var hideEmptyThumbnails: Bool {
+        get { UserDefaults.standard.object(forKey: "SBArtworkSelectorHideEmptyThumbnails") as? Bool ?? true }
+        set { UserDefaults.standard.set(newValue, forKey: "SBArtworkSelectorHideEmptyThumbnails") }
+    }
 
     private weak var delegate: ArtworkSelectorControllerDelegate?
 
@@ -156,7 +187,7 @@ final class ArtworkSelectorController: NSViewController, NSCollectionViewDataSou
     // MARK: - Init
     init(metadata: MetadataResult, delegate: ArtworkSelectorControllerDelegate) {
         self.delegate = delegate
-        self.artworksUnloaded = metadata.remoteArtworks
+        self.allArtworks = metadata.remoteArtworks
         self.artworks = []
         self.metadata = metadata
         super.init(nibName: nil, bundle: nil)
@@ -186,7 +217,8 @@ final class ArtworkSelectorController: NSViewController, NSCollectionViewDataSou
         view.wantsLayer = true
 
         imageBrowser.register(ArtworkSelectorViewItem.self, forItemWithIdentifier: ArtworkSelectorController.itemView)
-        loadMoreArtworks(count: 8)
+        configureMenus()
+        rebuildArtworks()
 
         let type = metadata.mediaKind.description
 
@@ -194,10 +226,6 @@ final class ArtworkSelectorController: NSViewController, NSCollectionViewDataSou
             let defaultType = ArtworkType(rawValue: UserDefaults.standard.integer(forKey: "SBArtworkSelectorDefaultType|\(type.description)")),
             let defaultSize = ArtworkSize(rawValue: UserDefaults.standard.integer(forKey: "SBArtworkSelectorDefaultSize|\(type.description)")){
             selectArtwork(type: defaultType, size: defaultSize, service: defaultService)
-        }
-
-        if imageBrowser.selectionIndexPaths.count == 0 {
-            selectArtwork(at: 0)
         }
 
         updateUI()
@@ -210,7 +238,17 @@ final class ArtworkSelectorController: NSViewController, NSCollectionViewDataSou
     }
 
     @IBAction func loadMoreArtwork(_ sender: Any) {
-        loadMoreArtworks(count: 8)
+        itemsPerProvider += 5
+        rebuildArtworks()
+    }
+
+    @IBAction func showSortMenu(_ sender: NSButton) {
+        sortButton.menu?.popUp(positioning: nil, at: NSPoint(x: 0, y: sender.bounds.height), in: sender)
+    }
+
+    @IBAction func showFilterMenu(_ sender: NSButton) {
+        rebuildFilterMenu()
+        filterButton.menu?.popUp(positioning: nil, at: NSPoint(x: 0, y: sender.bounds.height), in: sender)
     }
 
     // MARK: - User Interface
@@ -240,67 +278,283 @@ final class ArtworkSelectorController: NSViewController, NSCollectionViewDataSou
     fileprivate func reloadItem(_ item: ArtworkImageObject) {
         let selectionIndexPaths = imageBrowser.selectionIndexPaths
 
+        if hideEmptyThumbnails, item.hasFinishedLoading, item.image == nil {
+            failedThumbnailURLs.insert(item.source.thumbURL)
+            rebuildArtworks()
+            return
+        }
+
         if let index = artworks.firstIndex(of: item) {
             let indexPath = IndexPath(item: index, section: 0)
             imageBrowser.reloadItems(at: [indexPath])
         }
 
-            imageBrowser.selectionIndexPaths = selectionIndexPaths
+        imageBrowser.selectionIndexPaths = selectionIndexPaths
     }
 
     private func selectArtwork(at index: Int) {
+        guard artworks.indices.contains(index), imageBrowser.numberOfItems(inSection: 0) > index else {
+            addArtworkButton.isEnabled = false
+            return
+        }
         let indexPath = IndexPath(item: index, section: 0)
         imageBrowser.selectItems(at: [indexPath], scrollPosition: .top)
         addArtworkButton.isEnabled = imageBrowser.selectionIndexPaths.isEmpty == false
     }
 
-    private func loadMoreArtworks(count: Int) {
-        let endIndex = artworksUnloaded.count < count ? artworksUnloaded.count : count
-        let newArtworks = artworksUnloaded[0 ..< endIndex]
+    private func scheduleArtworkSelection(at index: Int) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self,
+                  self.artworks.indices.contains(index),
+                  self.imageBrowser.numberOfItems(inSection: 0) > index else {
+                self?.addArtworkButton.isEnabled = false
+                return
+            }
+            self.selectArtwork(at: index)
+        }
+    }
 
-        artworks.append(contentsOf: newArtworks.map {  ArtworkImageObject(artwork: $0, delegate: self) })
-        artworksUnloaded.removeFirst(endIndex)
-        loadMoreArtworkButton.isEnabled = artworksUnloaded.isEmpty == false
+    private func configureMenus() {
+        sortButton.image = NSImage(systemSymbolName: "arrow.up.arrow.down", accessibilityDescription: "Sort artwork")
+        sortButton.imagePosition = .imageOnly
+        filterButton.image = NSImage(systemSymbolName: "line.3.horizontal.decrease.circle", accessibilityDescription: "Filter artwork")
+        filterButton.imagePosition = .imageOnly
 
-        let range = (artworks.count - endIndex ..< artworks.count)
-        let indexes = range.map { IndexPath(item: $0, section: 0)}
+        let menu = NSMenu()
+        menu.addItem(menuItem(title: "Default", action: #selector(setSort(_:)), representedObject: ArtworkSort.original.rawValue, state: artworkSort == .original))
+        menu.addItem(menuItem(title: "Quality", action: #selector(setSort(_:)), representedObject: ArtworkSort.quality.rawValue, state: artworkSort == .quality))
+        menu.addItem(.separator())
+        menu.addItem(menuItem(title: "Ascending", action: #selector(setSortDirection(_:)), representedObject: true, state: sortAscending))
+        menu.addItem(menuItem(title: "Descending", action: #selector(setSortDirection(_:)), representedObject: false, state: !sortAscending))
+        sortButton.menu = menu
+        rebuildFilterMenu()
+    }
 
-        imageBrowser.insertItems(at: Set(indexes))
+    private func menuItem(title: String, action: Selector, representedObject: Any? = nil, state: Bool) -> NSMenuItem {
+        let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
+        item.target = self
+        item.representedObject = representedObject
+        item.state = state ? .on : .off
+        return item
+    }
+
+    private func providerKey(_ service: String) -> String {
+        switch service {
+        case "TheMovieDB": return "TMDB"
+        case "TheTVDB": return "TVDB"
+        case "Apple TV": return "Apple"
+        case "iTunes Store": return "iTunes"
+        default: return service
+        }
+    }
+
+    private func providerServices() -> [String] {
+        var providers = Array(Set(allArtworks.map { providerKey($0.service) }))
+        let primary = allArtworks.first.map { providerKey($0.service) }
+        providers.sort { lhs, rhs in
+            if lhs == primary { return true }
+            if rhs == primary { return false }
+            return lhs.localizedCaseInsensitiveCompare(rhs) == .orderedAscending
+        }
+        return providers
+    }
+
+    private func filterKey(_ group: String, _ value: String) -> String {
+        return "SBArtworkSelectorFilter|\(group)|\(value)"
+    }
+
+    private func isFilterEnabled(_ group: String, _ value: String) -> Bool {
+        let key = filterKey(group, value)
+        return UserDefaults.standard.object(forKey: key) as? Bool ?? true
+    }
+
+    private func rebuildFilterMenu() {
+        let menu = NSMenu()
+        let typeItem = NSMenuItem(title: "Artwork Type", action: nil, keyEquivalent: "")
+        let typeMenu = NSMenu()
+        for value in ["Poster", "Rectangle", "Square"] {
+            typeMenu.addItem(menuItem(title: value, action: #selector(toggleFilter(_:)), representedObject: ["type", value], state: isFilterEnabled("type", value)))
+        }
+        typeItem.submenu = typeMenu
+        menu.addItem(typeItem)
+
+        let providerItem = NSMenuItem(title: "Provider", action: nil, keyEquivalent: "")
+        let providerMenu = NSMenu()
+        for provider in providerServices() {
+            providerMenu.addItem(menuItem(title: provider, action: #selector(toggleFilter(_:)), representedObject: ["provider", provider], state: isFilterEnabled("provider", provider)))
+        }
+        providerItem.submenu = providerMenu
+        menu.addItem(providerItem)
+        menu.addItem(.separator())
+        menu.addItem(menuItem(title: "Hide Empty Thumbnails", action: #selector(toggleEmptyThumbnails(_:)), state: hideEmptyThumbnails))
+        filterButton.menu = menu
+    }
+
+    @objc private func setSort(_ sender: NSMenuItem) {
+        guard let value = sender.representedObject as? String, let sort = ArtworkSort(rawValue: value) else { return }
+        artworkSort = sort
+        configureMenus()
+        rebuildArtworks()
+    }
+
+    @objc private func setSortDirection(_ sender: NSMenuItem) {
+        guard let value = sender.representedObject as? Bool else { return }
+        sortAscending = value
+        configureMenus()
+        rebuildArtworks()
+    }
+
+    @objc private func toggleFilter(_ sender: NSMenuItem) {
+        guard let values = sender.representedObject as? [String], values.count == 2 else { return }
+        let key = filterKey(values[0], values[1])
+        UserDefaults.standard.set(!isFilterEnabled(values[0], values[1]), forKey: key)
+        rebuildFilterMenu()
+        rebuildArtworks()
+    }
+
+    @objc private func toggleEmptyThumbnails(_ sender: NSMenuItem) {
+        hideEmptyThumbnails.toggle()
+        rebuildFilterMenu()
+        rebuildArtworks()
+    }
+
+    private func artworkShape(_ artwork: Artwork) -> String {
+        // Prefer real dimensions when a provider supplies them. Size enums such
+        // as .high/.medium describe quality for some providers, not aspect ratio.
+        if let width = artwork.width, let height = artwork.height, width > 0, height > 0 {
+            if width == height { return "Square" }
+            return width > height ? "Rectangle" : "Poster"
+        }
+
+        switch artwork.size {
+        case .square:
+            return "Square"
+        case .rectangle, .fullscreen, .widescreen:
+            return "Rectangle"
+        default:
+            return "Poster"
+        }
+    }
+
+    private func artworkTypeEnabled(_ artwork: Artwork) -> Bool {
+        return isFilterEnabled("type", artworkShape(artwork))
+    }
+
+    private func qualityRank(_ artwork: Artwork) -> Int64 {
+        if let width = artwork.width, let height = artwork.height {
+            return Int64(width) * Int64(height)
+        }
+        switch artwork.size {
+        case .maxres: return 4
+        case .high: return 3
+        case .medium: return 2
+        case .low: return 1
+        default: return 0
+        }
+    }
+
+    private func eligibleArtworks() -> [Artwork] {
+        var result = allArtworks.filter { artwork in
+            let provider = providerKey(artwork.service)
+            return isFilterEnabled("provider", provider) && artworkTypeEnabled(artwork) && !failedThumbnailURLs.contains(artwork.thumbURL)
+        }
+        return result
+    }
+
+    private func artworkDefaultRank(_ artwork: Artwork) -> (Int, Int) {
+        // Default ordering favors provider-native poster artwork before the
+        // season/episode/backdrop images that are often rectangular.
+        let typeRank: Int
+        switch artwork.type {
+        case .poster:
+            typeRank = 0
+        case .season:
+            typeRank = 1
+        case .episode:
+            typeRank = 2
+        case .backdrop:
+            typeRank = 3
+        default:
+            typeRank = 4
+        }
+
+        let shapeRank: Int
+        switch artworkShape(artwork) {
+        case "Square":
+            shapeRank = 2
+        case "Rectangle":
+            shapeRank = 1
+        default:
+            shapeRank = 0
+        }
+        return (typeRank, shapeRank)
+    }
+
+    private func balancedArtworks() -> [Artwork] {
+        let eligible = eligibleArtworks()
+        var result: [Artwork] = []
+        for provider in providerServices() where isFilterEnabled("provider", provider) {
+            let matches = eligible.filter { providerKey($0.service) == provider }
+            let ordered: [Artwork]
+            ordered = matches.enumerated().sorted { lhs, rhs in
+                if artworkSort == .original {
+                    let leftRank = artworkDefaultRank(lhs.element)
+                    let rightRank = artworkDefaultRank(rhs.element)
+                    if leftRank.0 != rightRank.0 { return leftRank.0 < rightRank.0 }
+                    if leftRank.1 != rightRank.1 { return leftRank.1 < rightRank.1 }
+                    return sortAscending ? lhs.offset < rhs.offset : lhs.offset > rhs.offset
+                } else {
+                    let leftQuality = qualityRank(lhs.element)
+                    let rightQuality = qualityRank(rhs.element)
+                    if leftQuality != rightQuality {
+                        return sortAscending ? leftQuality < rightQuality : leftQuality > rightQuality
+                    }
+                    return sortAscending ? lhs.offset < rhs.offset : lhs.offset > rhs.offset
+                }
+            }.map(\.element)
+            result.append(contentsOf: ordered.prefix(itemsPerProvider))
+        }
+        return result
+    }
+
+    private func rebuildArtworks() {
+        let selectedURLs = Set(selectedArtworks().map { $0.source.url })
+        for artwork in artworks { artwork.cancel() }
+        artworks = balancedArtworks().map { ArtworkImageObject(artwork: $0, delegate: self) }
+        imageBrowser.reloadData()
+        loadMoreArtworkButton.isEnabled = providerServices().contains { provider in
+            eligibleArtworks().filter { providerKey($0.service) == provider }.count > itemsPerProvider
+        }
+        let selection = Set(artworks.enumerated().compactMap { selectedURLs.contains($0.element.source.url) ? IndexPath(item: $0.offset, section: 0) : nil })
+        imageBrowser.selectionIndexPaths = selection
+        if selection.isEmpty, artworks.isEmpty == false { scheduleArtworkSelection(at: 0) }
     }
 
     private func selectArtwork(type: ArtworkType, size: ArtworkSize, service: String) {
         if let artwork = (artworks.filter { $0.source.type == type && $0.source.size == size && $0.source.service == service } as [ArtworkImageObject]).first,
             let index = artworks.firstIndex(of: artwork) {
-            selectArtwork(at: index)
+            scheduleArtworkSelection(at: index)
         }
         else if let artwork = (artworks.filter { $0.source.type == type && $0.source.size == size } as [ArtworkImageObject]).first,
             let index = artworks.firstIndex(of: artwork) {
-            selectArtwork(at: index)
+            scheduleArtworkSelection(at: index)
         }
         else if let artwork = (artworks.filter { $0.source.type == type } as [ArtworkImageObject]).first,
             let index = artworks.firstIndex(of: artwork) {
-            selectArtwork(at: index)
-        }
-        else if artworksUnloaded.isEmpty == false {
-            for (index, artwork) in artworksUnloaded.enumerated() {
-                if artwork.type == type {
-                    let offset = artworks.count
-                    loadMoreArtworks(count: index + 1)
-                    selectArtwork(at: index + offset)
-                    break
-                }
-            }
+            scheduleArtworkSelection(at: index)
         }
     }
 
     private func selectedArtworks() -> [ArtworkImageObject] {
-        return imageBrowser.selectionIndexPaths.map { artworks[$0.item] }
+        return imageBrowser.selectionIndexPaths.compactMap { indexPath in
+            artworks.indices.contains(indexPath.item) ? artworks[indexPath.item] : nil
+        }
     }
 
     // MARK - UI state
 
     private func disableUI() {
-        [slider, addArtworkButton, loadMoreArtworkButton].forEach { $0.isEnabled = false }
+        [slider, addArtworkButton, loadMoreArtworkButton, sortButton, filterButton].forEach { $0.isEnabled = false }
         imageBrowser.isSelectable = false
     }
 

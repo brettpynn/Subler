@@ -102,10 +102,10 @@ public struct TheMovieDB: MetadataService {
 
     // MARK: - Movie metadata loading
 
-    private func loadArtwork(filePath: String, baseURL: String, thumbSize: String, kind: ArtworkType) -> Artwork? {
+    private func loadArtwork(filePath: String, baseURL: String, thumbSize: String, kind: ArtworkType, width: Int? = nil, height: Int? = nil) -> Artwork? {
         guard let url = URL(string: baseURL + "original" + filePath),
             let thumbURL = URL(string: baseURL + thumbSize + filePath) else { return nil }
-        return Artwork(url: url, thumbURL: thumbURL, service: self.name, type: kind, size: .standard)
+        return Artwork(url: url, thumbURL: thumbURL, service: self.name, type: kind, size: .standard, width: width, height: height)
     }
 
     private func loadMovieArtworks(result: TMDBMovie) -> [Artwork] {
@@ -144,7 +144,7 @@ public struct TheMovieDB: MetadataService {
             }
 
             if let images = result.images?.posters {
-                artworks.append(contentsOf: images.compactMap { loadArtwork(filePath: $0.file_path, baseURL: imageBaseURL, thumbSize: posterThumbnailSize, kind: .poster) } )
+                artworks.append(contentsOf: images.compactMap { loadArtwork(filePath: $0.file_path, baseURL: imageBaseURL, thumbSize: posterThumbnailSize, kind: .poster, width: $0.width, height: $0.height) } )
             }
 
             if result.images?.posters?.count == 0, let posterPath = result.poster_path,
@@ -255,7 +255,7 @@ public struct TheMovieDB: MetadataService {
                 for image in images {
                     if let url = URL(string: imageBaseURL + "original" + image.file_path),
                         let thumbURL = URL(string: imageBaseURL + posterThumbnailSize + image.file_path) {
-                        let remoteImage = Artwork(url: url, thumbURL: thumbURL, service: self.name, type: .poster, size: .standard)
+                        let remoteImage = Artwork(url: url, thumbURL: thumbURL, service: self.name, type: .poster, size: .standard, width: image.width, height: image.height)
                         artworks.append(remoteImage)
                     }
                 }
@@ -371,15 +371,15 @@ public struct TheMovieDB: MetadataService {
                 let imageBaseURL = config.secure_base_url,
                 let posterThumbnailSize = config.poster_sizes.first {
 
-                artworks.append(contentsOf: seasonImages.compactMap { loadArtwork(filePath: $0.file_path, baseURL: imageBaseURL, thumbSize: posterThumbnailSize, kind: .season) } )
-                artworks.append(contentsOf: episodeImages.compactMap { loadArtwork(filePath: $0.file_path, baseURL: imageBaseURL, thumbSize: posterThumbnailSize, kind: .episode) } )
+                artworks.append(contentsOf: seasonImages.compactMap { loadArtwork(filePath: $0.file_path, baseURL: imageBaseURL, thumbSize: posterThumbnailSize, kind: .season, width: $0.width, height: $0.height) } )
+                artworks.append(contentsOf: episodeImages.compactMap { loadArtwork(filePath: $0.file_path, baseURL: imageBaseURL, thumbSize: posterThumbnailSize, kind: .episode, width: $0.width, height: $0.height) } )
             }
 
         }
 
         artworks.insert(contentsOf: metadata.remoteArtworks, at: 0)
 
-        var iTunesImage = [Artwork](), appleTV = [Artwork](), squareTVArt = [Artwork]()
+        var iTunesImage = [Artwork](), appleTV = [Artwork](), squareTVArt = [Artwork](), tvdbArt = [Artwork]()
         let group = DispatchGroup()
         DispatchQueue.global().async(group: group) {
             // add iTunes artwork
@@ -395,20 +395,33 @@ public struct TheMovieDB: MetadataService {
                 let season = metadata[.season] as? Int,
                 let store = iTunesStore.Store(language: "USA (English)") {
 
-                appleTV = AppleTV().searchArtwork(term: name, store: store, type: .tvShow(season: season))
+                let preferredYear: Int?
+                if let seriesID = metadata[.serviceContentID] as? Int,
+                   let firstAirDate = self.session.fetch(seriesID: seriesID, language: language)?.first_air_date {
+                    preferredYear = Int(String(firstAirDate.prefix(4)))
+                } else {
+                    preferredYear = nil
+                }
+                appleTV = AppleTV().searchArtwork(term: name, store: store, type: .tvShow(season: season), preferredYear: preferredYear)
             }
         }
         DispatchQueue.global().async(group: group) {
             // Add Squared TV Artwork
             squareTVArt = self.loadSquareTVArtwork(metadata)
         }
+        DispatchQueue.global().async(group: group) {
+            if let seriesID = metadata[.serviceAdditionalContentID] as? Int {
+                tvdbArt = TheTVDB().loadArtworks(seriesID: seriesID)
+            }
+        }
         group.wait()
 
-        artworks.insert(contentsOf: iTunesImage, at: 0)
-        artworks.insert(contentsOf: squareTVArt, at: 0)
-        artworks.insert(contentsOf: appleTV, at: 0)
+        artworks.append(contentsOf: tvdbArt)
+        artworks.append(contentsOf: appleTV)
+        artworks.append(contentsOf: iTunesImage)
+        artworks.append(contentsOf: squareTVArt)
 
-        metadata.remoteArtworks = artworks
+        metadata.remoteArtworks = Artwork.unique(artworks: artworks)
 
         return metadata
     }

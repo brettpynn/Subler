@@ -161,7 +161,9 @@ public struct TheTVDB : MetadataService {
                                     thumbURL: thumbnailURL,
                                     service: self.name,
                                     type: type,
-                                    size: size)
+                                    size: size,
+                                    width: artworkType.map { Int($0.width) },
+                                    height: artworkType.map { Int($0.height) })
                 artworks.append(entry)
             }
         }
@@ -209,7 +211,9 @@ public struct TheTVDB : MetadataService {
                                     thumbURL: thumbnailURL,
                                     service: self.name,
                                     type: type,
-                                    size: size)
+                                    size: size,
+                                    width: artworkType.map { Int($0.width) },
+                                    height: artworkType.map { Int($0.height) })
                 artworks.append(entry)
             }
         }
@@ -250,6 +254,11 @@ public struct TheTVDB : MetadataService {
         // "Copyright", "Comments", "Producers", "Artist"
 
         return result
+    }
+
+    public func loadArtworks(seriesID: Int) -> [Artwork] {
+        guard let info = session.fetch(seriesInfo: String(seriesID)) else { return [] }
+        return cleanArtworks(info.artworks)
     }
 
     private func loadEpisodes(info: TVDBSeriesExtendedRecord, seasonID: Int?, episodeID: Int?, language: String) -> [MetadataResult] {
